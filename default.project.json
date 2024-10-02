@@ -8,10 +8,8 @@
     "ServerScriptService": {
       "$path": "src/server"
     },
-    "StarterPlayer": {
-      "StarterPlayerScripts": {
-        "$path": "src/client"
-      }
+    "ReplicatedFirst": {
+      "$path": "src/client"
     }
   }
 }
