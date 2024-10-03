@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Packages = ReplicatedStorage:WaitForChild("Packages")
 
+local ShardNet = require(Packages:WaitForChild("ShardNet"))
 local Dispatcher = require(Packages:WaitForChild("Dispatcher"))
 local Promise = require(Packages:WaitForChild("Promise"))
 local start = tick()
@@ -9,11 +10,30 @@ local start = tick()
 Promise.new(function(resolve, reject)
 	local initialized = {}
 	local dispatch = Dispatcher.new()
+	local network = ShardNet.new()
 
 	for _, module in script:GetChildren() do
 		local required = require(module).new({
 			dispatch = dispatch,
+			network = network,
 		})
+
+		local constructed = network:construct(module.Name:gsub("Controller$", ""))
+
+		for name, data in constructed do
+			if data.RF ~= nil then
+				required[name] = function(self, ...)
+					return data.RF:InvokeServer(...)
+				end
+			end
+
+			if data.RE ~= nil then
+				data.RE.OnClientEvent:Connect(function(self, ...)
+					required[name](...)
+				end)
+			end
+		end
+
 		if required.initialize then
 			required:initialize()
 		end

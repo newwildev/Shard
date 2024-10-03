@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Packages = ReplicatedStorage:WaitForChild("Packages")
 
+local ShardNet = require(ReplicatedStorage.Packages.ShardNet)
 local Dispatcher = require(Packages.Dispatcher)
 local Promise = require(Packages.Promise)
 local start = tick()
@@ -10,11 +11,21 @@ local start = tick()
 Promise.new(function(resolve, reject)
 	local initalized = {}
 	local dispatch = Dispatcher.new()
+	local network = ShardNet.new()
 
 	for _, module in script:GetChildren() do
 		local required = require(module).new({
 			dispatch = dispatch,
+			network = network,
 		})
+
+		local name = module.Name:gsub("Service$", "")
+		network:fetchNamespace(name, ReplicatedStorage)
+		for functionName, func in required do
+			if typeof(func) == "function" then
+				network:remoteFunction(functionName, name, func)
+			end
+		end
 
 		if required.initialize then
 			required:initialize()
