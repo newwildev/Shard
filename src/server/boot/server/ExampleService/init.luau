@@ -4,21 +4,24 @@ ExampleService.__index = ExampleService
 function ExampleService.new(props: { [any]: any }): ExampleService
 	local self = setmetatable({}, ExampleService)
 
-	self._dispatch = props.dispatch
-	self._network = props.network
+	self.network = props.network
+	self.dispatch = props.dispatch
 
 	self.functionName = function(player, data: { [any]: any })
 		print(player)
 		print(data.message)
 	end
 
-	self.remoteEvent = self._network:remoteEvent("ExampleEvent", "ExampleService")
+	self.remoteEvent = self.network:remoteEvent("ExampleEvent", "ExampleService")
 
 	return self
 end
 
 function ExampleService:initialize()
-	print(self._dispatch)
+	print(self.dispatch)
+	self.remoteEvent:Connect(function(player, data: { [any]: any })
+		print(player, data)
+	end)
 end
 
 return ExampleService

@@ -15,7 +15,6 @@ Promise.new(function(resolve, reject)
 	for _, module in script:GetChildren() do
 		local required = require(module).new({
 			dispatch = dispatch,
-			network = network,
 		})
 
 		local constructed = network:construct(module.Name:gsub("Controller$", ""))
@@ -27,10 +26,8 @@ Promise.new(function(resolve, reject)
 				end
 			end
 
-			if data.RE ~= nil then
-				data.RE.OnClientEvent:Connect(function(self, ...)
-					required[name](...)
-				end)
+			if data._remoteEvent ~= nil then
+				required[name] = data
 			end
 		end
 
