@@ -26,7 +26,7 @@ function RemoteEvent:Connect(callback: (player: Player, args: any) -> ())
 	end)
 end
 
-function RemoteEvent:Destruct()
+function RemoteEvent:Destroy()
 	self._remoteEvent:Destroy()
 end
 

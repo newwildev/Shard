@@ -20,9 +20,9 @@ Promise.new(function(resolve, reject)
 		local constructed = network:construct(module.Name:gsub("Controller$", ""))
 
 		for name, data in constructed do
-			if data.RF ~= nil then
+			if data._remoteFunction ~= nil then
 				required[name] = function(self, ...)
-					return data.RF:InvokeServer(...)
+					return data:Invoke(...)
 				end
 			end
 
