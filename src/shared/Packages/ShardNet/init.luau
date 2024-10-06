@@ -35,7 +35,7 @@ function ShardNet:fetchNamespace(name: string)
 		remoteFolder.Name = "Remote"
 
 		if ReplicatedStorage.Remote:FindFirstChild(name, true) then
-			return
+			return ReplicatedStorage.Remote:FindFirstChild(name, true)
 		end
 
 		local namespace = Instance.new("Folder")
