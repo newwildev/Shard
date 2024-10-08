@@ -9,6 +9,7 @@ local Dispatcher = require(Packages.Dispatcher)
 local Promise = require(Packages.Promise)
 local start = tick()
 
+-- TODO: LOAD SHARDNET PER MODULE AND NOT GLOBAL
 Promise.new(function(resolve, reject)
 	local initalized = {}
 	local dispatch = Dispatcher.new()
