@@ -1,9 +1,8 @@
 export type Dispatcher = {
 	new: () -> Dispatcher,
-	subscribe: (self: Dispatcher, event: string, callback: (payload: { [any]: any }) -> ()) -> nil,
-	unsubscribe: (self: Dispatcher, event: string, callback: (payload: { [any]: any }) -> ()) -> nil,
-	publish: (self: Dispatcher, event: string, payload: { [any]: any }) -> nil,
-	watch: (self: Dispatcher, event: string, callback: (payload: { [any]: any }) -> ()) -> nil,
+	Subscribe: (self: Dispatcher, event: string, callback: (payload: { [any]: any }) -> ()) -> nil,
+	Unsubscribe: (self: Dispatcher, event: string, callback: (payload: { [any]: any }) -> ()) -> nil,
+	Publish: (self: Dispatcher, event: string, payload: { [any]: any }) -> nil,
 }
 
 local Dispatcher = {}
@@ -17,7 +16,7 @@ function Dispatcher.new()
 	return self
 end
 
-function Dispatcher:subscribe(event: string, callback: (payload: { [any]: any }) -> ())
+function Dispatcher:Subscribe(event: string, callback: (payload: { [any]: any }) -> ())
 	if not self._subscriptions[event] then
 		self._subscriptions[event] = {}
 	end
@@ -27,14 +26,14 @@ function Dispatcher:subscribe(event: string, callback: (payload: { [any]: any })
 	}
 end
 
-function Dispatcher:unsubscribe(event: string, callback: (payload: { [any]: any }) -> ())
+function Dispatcher:Unsubscribe(event: string, callback: (payload: { [any]: any }) -> ())
 	if self._subscriptions[event] then
 		self._subscriptions[event] = nil
 	end
 end
 
 
-function Dispatcher:publish(event: string, payload: { [any]: any })
+function Dispatcher:Publish(event: string, payload: { [any]: any })
 	if not self._subscriptions[event] then
 		return
 	end

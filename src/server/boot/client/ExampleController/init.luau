@@ -14,7 +14,7 @@ function ExampleController.new(props: { dispatch: Types.Dispatcher }): Types.Exa
 end
 
 function ExampleController:_mountDispatcher()
-	self.dispatch:subscribe("ExampleEvent", function(payload: { [any]: any })
+	self.dispatch:Subscribe("ExampleEvent", function(payload: { [any]: any })
 		local message = payload.message
 
 		print(`Received message: {message}`)

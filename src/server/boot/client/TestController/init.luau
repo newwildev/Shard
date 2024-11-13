@@ -12,7 +12,7 @@ end
 function TestController:initialize() end
 
 function TestController:start()
-	self.dispatch:publish("ExampleEvent", {
+	self.dispatch:Publish("ExampleEvent", {
 		message = "Hello, World!",
 	})
 end
