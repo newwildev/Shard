@@ -20,8 +20,10 @@ export type ShardNet = {
 local ShardNet = {}
 ShardNet.__index = ShardNet
 
-function ShardNet.new()
+function ShardNet.new(props: { moduleName: string })
 	local self = setmetatable({}, ShardNet)
+
+	self.moduleName = props.moduleName
 
 	self._remoteEvents = {}
 	self._remoteFunctions = {}
@@ -60,11 +62,12 @@ function ShardNet:fetchNamespace(name: string)
 	return nil
 end
 
-function ShardNet:construct(name: string)
+function ShardNet:construct()
 	local RunContext = RunService:IsServer() and Server or Client
 	if RunContext == Server then
 		error("Construct can only be called on the client")
 	end
+	local name = self.moduleName:gsub("Controller$", "")
 
 	local namespace = self:fetchNamespace(name)
 	local constructed = {}
@@ -86,15 +89,12 @@ end
 
 -- TODO: UPDATE SO WE DON'T HAVE TO PROVIDE THE NAMESPACE NAME IT SHOULD BE AUTOMATIC
 -- NOTE: MAYBE REQUIRE NETWORK? INSTEAD OF INJECTING NO NEED FOR GLOBAL NETWORK ANYMORE
-function ShardNet:remoteFunction(
-	functionName: string,
-	namespaceName: string,
-	callback: (player: Player, args: any) -> any
-)
+function ShardNet:remoteFunction(functionName: string, callback: (player: Player, args: any) -> any)
 	local RunContext = RunService:IsServer() and Server or Client
 	if RunContext == Client then
 		error("Cannot create RemoteFunction on the client")
 	end
+	local namespaceName = self.moduleName
 	local name = namespaceName:gsub("Service$", "")
 
 	local namespace = self:fetchNamespace(name)
@@ -107,11 +107,12 @@ function ShardNet:remoteFunction(
 	return require(RunContext.RemoteFunction).new(remoteFunction, callback)
 end
 
-function ShardNet:remoteEvent(eventName: string, namespaceName: string)
+function ShardNet:remoteEvent(eventName: string)
 	local RunContext = RunService:IsServer() and Server or Client
 	if RunContext == Client then
 		error("Cannot create RemoteEvent on the client")
 	end
+	local namespaceName = self.moduleName
 	local name = namespaceName:gsub("Service$", "")
 
 	local namespace = self:fetchNamespace(name)
