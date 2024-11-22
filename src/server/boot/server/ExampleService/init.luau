@@ -7,17 +7,13 @@ function ExampleService.new(props: { [any]: any }): ExampleService
 	self.network = props.network
 	self.dispatch = props.dispatch
 
-	self.functionName = self.network:remoteFunction(
-		"functionName",
-		"ExampleService",
-		function(player, data: { [any]: any })
-			print(player, data)
+	self.functionName = self.network:remoteFunction("functionName", function(player, data: { [any]: any })
+		print(player, data)
 
-			return "Hello, World!"
-		end
-	)
+		return "Hello, World!"
+	end)
 
-	self.remoteEvent = self.network:remoteEvent("ExampleEvent", "ExampleService")
+	self.remoteEvent = self.network:remoteEvent("ExampleEvent")
 
 	return self
 end

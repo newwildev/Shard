@@ -9,14 +9,15 @@ local Dispatcher = require(Packages.Dispatcher)
 local Promise = require(Packages.Promise)
 local start = tick()
 
--- TODO: LOAD SHARDNET PER MODULE AND NOT GLOBAL
 Promise.new(function(resolve, reject)
 	local initalized = {}
 	local dispatch = Dispatcher.new()
-	local network = ShardNet.new()
 	local Data = Data.new()
 
 	for _, module in script:GetChildren() do
+		local network = ShardNet.new({
+			moduleName = module.Name,
+		})
 		local required = require(module).new({
 			dispatch = dispatch,
 			network = network,

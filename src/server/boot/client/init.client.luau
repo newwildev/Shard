@@ -11,9 +11,11 @@ local start = tick()
 Promise.new(function(resolve, reject)
 	local initialized = {}
 	local dispatch = Dispatcher.new()
-	local network = ShardNet.new()
 
 	for _, module in script:GetChildren() do
+		local network = ShardNet.new({
+			moduleName = module.Name,
+		})
 		local required = require(module).new({
 			dispatch = dispatch,
 		})
