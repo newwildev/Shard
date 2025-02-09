@@ -3,7 +3,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Libraries = ReplicatedStorage.Libraries
+local Packages = ReplicatedStorage.Packages
 
+local observePlayer = require(Packages.Observers.observePlayer)
 local PlayerProfile = require(script.Components.PlayerProfile)
 local ProfileStore = require(Libraries.ProfileStore)
 local Replica = require(Libraries.Replica.ReplicaServer)
@@ -15,6 +17,7 @@ Data.__index = Data
 function Data.new()
 	local self = setmetatable({}, Data)
 
+	self._playerToken = Replica.Token("PlayerData")
 	self._playerStore = ProfileStore.New("PlayerStore", Settings.TEMPLATE)
 	if RunService:IsStudio() and Settings.DEBUG_MOCK then
 		print(` i'm m o C k ing yuou`)
@@ -73,7 +76,7 @@ function Data:_playerAdded(player: Player)
 	end
 
 	local replica = Replica.New({
-		Token = Replica.Token("PlayerData"),
+		Token = self._playerToken,
 		Data = profile.Data,
 		Tags = {
 			Player = player,
@@ -84,28 +87,17 @@ function Data:_playerAdded(player: Player)
 	self._profiles[player] = PlayerProfile.new(player, profile, replica)
 end
 
-function Data:_mountPlayerAdded()
-	Players.PlayerAdded:Connect(function(player)
+function Data:_initialize()
+	observePlayer(function(player)
 		self:_playerAdded(player)
-	end)
 
-	for _, player in Players:GetPlayers() do
-		self:_playerAdded(player)
-	end
-end
-
-function Data:_mountPlayerRemoving()
-	Players.PlayerRemoving:Connect(function(player)
-		local profile = self._profiles[player]:GetProfile()
-		if profile then
-			profile:EndSession()
+		return function()
+			local profile = self._profiles[player]:GetProfile()
+			if profile then
+				profile:EndSession()
+			end
 		end
 	end)
-end
-
-function Data:_initialize()
-	self:_mountPlayerAdded()
-	self:_mountPlayerRemoving()
 end
 
 return Data

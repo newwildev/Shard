@@ -23,62 +23,62 @@ local suffixes = require(script.Suffixes)
 local fullNames = require(script.FullNames)
 
 type ShardMath = {
-    number: number,
-    decimalPlaces: number,
-    formatWithSuffix: (self: ShardMath) -> string,
-    formatWithFullName: (self: ShardMath) -> string,
+	number: number,
+	decimalPlaces: number,
+	formatWithSuffix: (self: ShardMath) -> string,
+	formatWithFullName: (self: ShardMath) -> string,
 }
 
 function ShardMath.new(number: number, decimalPlaces: number?): ShardMath
-    local self = setmetatable({}, ShardMath)
-    self.number = number
-    self.decimalPlaces = decimalPlaces or 1
-    return self
+	local self = setmetatable({}, ShardMath)
+	self.number = number
+	self.decimalPlaces = decimalPlaces or 1
+	return self
 end
 
 local function roundToDecimal(number, decimalPlaces)
-    local factor = 10 ^ decimalPlaces
-    return math.floor(number * factor) / factor
+	local factor = 10 ^ decimalPlaces
+	return math.floor(number * factor) / factor
 end
 
 function ShardMath.formatNumberWithSuffix(number: number, decimalPlaces: number?): string
-    local absoluteNumber = math.abs(number)
-    decimalPlaces = decimalPlaces or 1
-    
-    if absoluteNumber < 1000 then
-        return tostring(number)
-    end
+	local absoluteNumber = math.abs(number)
+	decimalPlaces = decimalPlaces or 1
 
-    local suffixIndex = math.floor(math.log10(absoluteNumber) / 3)
-    local suffix = suffixes[suffixIndex] or ""
+	if absoluteNumber < 1000 then
+		return tostring(number)
+	end
 
-    local scaledNumber = roundToDecimal(number / (1000 ^ suffixIndex), decimalPlaces)
+	local suffixIndex = math.floor(math.log10(absoluteNumber) / 3)
+	local suffix = suffixes[suffixIndex] or ""
 
-    return string.format(`%.{decimalPlaces}f%s`, scaledNumber, suffix)
+	local scaledNumber = roundToDecimal(number / (1000 ^ suffixIndex), decimalPlaces)
+
+	return string.format(`%.{decimalPlaces}f%s`, scaledNumber, suffix)
 end
 
 function ShardMath:formatWithSuffix(): string
-    return ShardMath.formatNumberWithSuffix(self.number, self.decimalPlaces)
+	return ShardMath.formatNumberWithSuffix(self.number, self.decimalPlaces)
 end
 
 function ShardMath.formatNumberWithFullName(number: number, decimalPlaces: number): string
-    local absoluteNumber = math.abs(number)
-    decimalPlaces = decimalPlaces or 1
+	local absoluteNumber = math.abs(number)
+	decimalPlaces = decimalPlaces or 1
 
-    if absoluteNumber < 1000 then
-        return tostring(number)
-    end
+	if absoluteNumber < 1000 then
+		return tostring(number)
+	end
 
-    local suffixIndex = math.floor(math.log10(absoluteNumber) / 3)
-    local suffix = fullNames[suffixIndex] or ""
+	local suffixIndex = math.floor(math.log10(absoluteNumber) / 3)
+	local suffix = fullNames[suffixIndex] or ""
 
-    local scaledNumber = roundToDecimal(number / (1000 ^ suffixIndex), decimalPlaces)
+	local scaledNumber = roundToDecimal(number / (1000 ^ suffixIndex), decimalPlaces)
 
-    return string.format(`%.{decimalPlaces}f %s`, scaledNumber, suffix)
+	return string.format(`%.{decimalPlaces}f %s`, scaledNumber, suffix)
 end
 
 function ShardMath:formatWithFullName(): string
-    return ShardMath.formatNumberWithFullName(self.number, self.decimalPlaces)
+	return ShardMath.formatNumberWithFullName(self.number, self.decimalPlaces)
 end
 
 return ShardMath

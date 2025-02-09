@@ -1,5 +1,5 @@
 {
-  "name": "Shard",
+  "name": "Aura Tycoon",
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
@@ -8,8 +8,14 @@
     "ServerScriptService": {
       "$path": "src/server"
     },
-    "ReplicatedFirst": {
-      "$path": "src/client"
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "$ignoreUnknownInstances": true,
+        "$path": "src/client"
+      },
+      "$ignoreUnknownInstances": true
     }
   }
 }

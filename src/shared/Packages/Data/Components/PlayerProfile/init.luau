@@ -1,3 +1,8 @@
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Settings = require(script.Parent.Settings)
+
 local PlayerProfile = {}
 PlayerProfile.__index = PlayerProfile
 
@@ -11,34 +16,7 @@ function PlayerProfile.new(player, profile, replica)
 	return self
 end
 
--- API
-function PlayerProfile:CanAfford(currency: string, amount: number)
-	local retrieved = self:Get(currency)
-
-	return retrieved >= amount
-end
-
-function PlayerProfile:Increment(currency: string, amount: number)
-	local retrieved = self:Get(currency)
-	local newAmount = retrieved + amount
-
-	if newAmount < 0 then
-		newAmount = 0
-	end
-
-	self:Set(currency, newAmount)
-end
-
-function PlayerProfile:Decrement(currency: string, amount: number)
-	local retrieved = self:Get(currency)
-	local newAmount = retrieved - amount
-
-	if newAmount < 0 then
-		newAmount = 0
-	end
-
-	self:Set(currency, newAmount)
-end
+-- CUSTOM API
 
 -- INTERNAL API
 function PlayerProfile:Get(keyToGet: string, tableToSearch: {})
@@ -95,5 +73,29 @@ end
 function PlayerProfile:IsActive()
 	return self._profile:IsActive()
 end
+
+function PlayerProfile:Increment(currency: string, amount: number)
+	local retrieved = self:Get(currency)
+	local newAmount = retrieved + amount
+
+	if newAmount < 0 then
+		newAmount = 0
+	end
+
+	self:Set(currency, newAmount)
+end
+
+function PlayerProfile:Decrement(currency: string, amount: number)
+	local retrieved = self:Get(currency)
+	local newAmount = retrieved - amount
+
+	if newAmount < 0 then
+		newAmount = 0
+	end
+
+	self:Set(currency, newAmount)
+end
+
+-- INTERNAL
 
 return PlayerProfile
