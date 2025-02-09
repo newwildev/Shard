@@ -1,20 +1,43 @@
+while workspace:GetAttribute("ServerLoaded") ~= true do
+	print("Waiting for server to load...")
+	task.wait()
+end
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Packages = ReplicatedStorage:WaitForChild("Packages")
 
+local Framework = require(ReplicatedStorage.Configs.Framework)
 local ReplicaClient = require(ReplicatedStorage.Libraries.Replica.ReplicaClient)
-local Dispatcher = require(Packages:WaitForChild("Dispatcher"))
 local Promise = require(Packages:WaitForChild("Promise"))
 local start = tick()
 
-Promise.new(function(resolve, reject)
-	local initialized = {}
-	local dispatch = Dispatcher.new()
+local totalModules = #script:GetChildren()
+local loaded = 0
+local initialized = {}
 
-	for _, module in script:GetChildren() do
-		local required = require(module).new({
-			dispatch = dispatch,
-		})
+local function loadModule(module)
+	if Framework.DEV_MODE and RunService:IsStudio() then
+		task.spawn(function()
+			local success, err = pcall(function()
+				local required = require(module).new({})
+
+				if required.initialize then
+					required:initialize()
+				end
+
+				initialized[module.Name] = required
+			end)
+
+			if not success then
+				warn(`🚫 {err}`)
+			end
+
+			loaded += 1
+		end)
+	else
+		local required = require(module).new({})
 
 		if required.initialize then
 			required:initialize()
@@ -22,18 +45,30 @@ Promise.new(function(resolve, reject)
 
 		initialized[module.Name] = required
 	end
+end
+
+Promise.new(function(resolve, reject)
+	for _, module in script:GetChildren() do
+		loadModule(module)
+	end
+
+	if Framework.DEV_MODE and RunService:IsStudio() then
+		while loaded < totalModules do
+			task.wait()
+		end
+	end
 
 	for name, module in initialized do
 		if module.start then
 			module:start()
-			print(`Loaded {name}`)
 		end
+		print(`🚀 Loaded {name}`)
 	end
 
 	resolve()
 end)
 	:andThen(function()
-		print(`Client Loaded Successfully in {tick() - start}s`)
+		print(`✅ Client Loaded Successfully in {tick() - start}s`)
 		ReplicaClient.RequestData()
 	end)
 	:catch(function(err)
