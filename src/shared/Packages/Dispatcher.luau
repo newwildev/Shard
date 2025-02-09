@@ -1,44 +1,96 @@
 export type Dispatcher = {
-	new: () -> Dispatcher,
-	Subscribe: (self: Dispatcher, event: string, callback: (payload: { [any]: any }) -> ()) -> nil,
-	Unsubscribe: (self: Dispatcher, event: string, callback: (payload: { [any]: any }) -> ()) -> nil,
-	Publish: (self: Dispatcher, event: string, payload: { [any]: any }) -> nil,
-	watch: (self: Dispatcher, event: string, callback: (payload: { [any]: any }) -> ()) -> nil,
+    new: () -> Dispatcher,
+    Subscribe: (self: Dispatcher, event: string, callback: (payload: any) -> (), callbackName: string?) -> nil,
+    subscribe: (self: Dispatcher, event: string, callback: (payload: any) -> (), callbackName: string?) -> nil,
+    SubscribeOnce: (self: Dispatcher, event: string, callback: (payload: any) -> (), callbackName: string?) -> nil,
+    Unsubscribe: (self: Dispatcher, event: string, callbackName: string?) -> nil,
+    unsubscribe: (self: Dispatcher, event: string, callbackName: string?) -> nil,
+    Publish: (self: Dispatcher, event: string, payload: any) -> nil,
+    publish: (self: Dispatcher, event: string, payload: any) -> nil,
+    PublishDeferred: (self: Dispatcher, event: string, payload: any) -> nil,
 }
 
 local Dispatcher = {}
 Dispatcher.__index = Dispatcher
 
+local DispatcherSingleton = setmetatable({}, Dispatcher)
+DispatcherSingleton._events = {}
+
 function Dispatcher.new()
-	local self = setmetatable({}, Dispatcher)
-
-	self._subscriptions = {}
-
-	return self
+    local self = setmetatable({}, Dispatcher)
+    self._events = {}
+    return self
 end
 
-function Dispatcher:Subscribe(event: string, callback: (payload: { [any]: any }) -> ())
-	if not self._subscriptions[event] then
-		self._subscriptions[event] = {}
-	end
-
-	self._subscriptions[event] = {
-		callback = callback,
-	}
+function Dispatcher:_getEventTable()
+    return self == Dispatcher and DispatcherSingleton._events or self._events
 end
 
-function Dispatcher:Unsubscribe(event: string, callback: (payload: { [any]: any }) -> ())
-	if self._subscriptions[event] then
-		self._subscriptions[event] = nil
-	end
+function Dispatcher:Subscribe(event: string, callback: (payload: any) -> (), callbackName: string? )
+    local eventTable = self:_getEventTable()
+    
+    if not eventTable[event] then
+        eventTable[event] = {}
+    end
+    
+    if callbackName then
+        eventTable[event][callbackName] = callback
+    else
+        table.insert(eventTable[event], callback)
+    end
 end
 
-function Dispatcher:Publish(event: string, payload: { [any]: any })
-	if not self._subscriptions[event] then
-		return
-	end
-
-	return self._subscriptions[event].callback(payload)
+function Dispatcher:subscribe(event: string, callbackName: string?, callback: (payload: any) -> ())
+    self:Subscribe(event, callback, callbackName)
 end
 
-return Dispatcher
+function Dispatcher:SubscribeOnce(event: string, callback: (payload: any) -> (), callbackName: string?)
+    local function oneTimeCallback(...)
+        self:Unsubscribe(event, callbackName)
+        callback(...)
+    end
+    self:Subscribe(event, callbackName, oneTimeCallback)
+end
+
+function Dispatcher:Unsubscribe(event: string, callbackName: string?)
+    local eventTable = self:_getEventTable()
+    local eventListeners = eventTable[event]
+
+    if not eventListeners then return end
+
+    if callbackName then
+        eventListeners[callbackName] = nil
+    else
+        eventTable[event] = nil
+    end
+end
+
+function Dispatcher:unsubscribe(event: string, callbackName: string?)
+    self:Unsubscribe(event, callbackName)
+end
+
+function Dispatcher:Publish(event: string, ...: any)
+    local eventTable = self:_getEventTable()
+    local eventListeners = eventTable[event]
+
+    if not eventListeners then return end
+
+    for _, callback in pairs(eventListeners) do
+        task.spawn(callback, ...)
+    end
+end
+
+function Dispatcher:PublishDeferred(event: string, ...: any)
+    local args = { ... }
+    task.defer(function()
+        self:Publish(event, unpack(args))
+    end)
+end
+
+function Dispatcher:publish(event: string, ...: any)
+    self:Publish(event, ...)
+end
+
+return setmetatable(Dispatcher, {
+    __index = DispatcherSingleton,
+})
