@@ -10,6 +10,7 @@ local Packages = ReplicatedStorage:WaitForChild("Packages")
 
 local Framework = require(ReplicatedStorage.Configs.Framework)
 local ReplicaClient = require(ReplicatedStorage.Libraries.Replica.ReplicaClient)
+local GetModule = require(ReplicatedStorage.Packages.GetModule)
 local Promise = require(Packages:WaitForChild("Promise"))
 local start = tick()
 
@@ -28,6 +29,7 @@ local function loadModule(module)
 				end
 
 				initialized[module.Name] = required
+				GetModule:Add(required, module.Name)
 			end)
 
 			if not success then
@@ -44,6 +46,7 @@ local function loadModule(module)
 		end
 
 		initialized[module.Name] = required
+		GetModule:Add(required, module.Name)
 	end
 end
 

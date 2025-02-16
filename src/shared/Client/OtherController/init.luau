@@ -7,17 +7,11 @@ TestController.__index = TestController
 function TestController.new()
 	local self = setmetatable({}, TestController)
 
+	self._hello = "Hello World"
+
 	return self
 end
 
-function TestController:initialize()
-	print("Running test controller")
-end
-
-function TestController:start()
-	print("Starting test controller")
-	local module = GetModule("OtherController")
-	print(module)
-end
+function TestController:initialize() end
 
 return TestController

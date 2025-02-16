@@ -3,6 +3,7 @@ local RunService = game:GetService("RunService")
 local Packages = ReplicatedStorage:WaitForChild("Packages")
 
 local Framework = require(ReplicatedStorage.Configs.Framework)
+local GetModule = require(ReplicatedStorage.Packages.GetModule)
 local Data = require(Packages.Data)
 local Promise = require(Packages.Promise)
 local start = tick()
@@ -24,8 +25,9 @@ local function loadModule(module, Data)
 				end
 
 				initalized[module.Name] = required
+				GetModule:Add(required, module.Name)
 			end)
-			
+
 			if not success then
 				warn(`🚫 {err}`)
 			end
@@ -41,6 +43,7 @@ local function loadModule(module, Data)
 		end
 
 		initalized[module.Name] = required
+		GetModule:Add(required, module.Name)
 	end
 end
 

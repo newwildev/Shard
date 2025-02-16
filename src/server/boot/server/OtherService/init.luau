@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local RX = require(ReplicatedStorage.Packages.RX)
 local Dispatcher = require(ReplicatedStorage.Packages.Dispatcher)
+local GetModule = require(ReplicatedStorage.Packages.GetModule)
 
 local TestService = {}
 TestService.__index = TestService
@@ -14,6 +15,10 @@ end
 
 function TestService:initialize()
 	self:runDataTests()
+end
+
+function TestService:start()
+	local module = GetModule("TestService")
 end
 
 function TestService:runDataTests()
